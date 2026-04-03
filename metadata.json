@@ -1,0 +1,7 @@
+{
+  "name": "BWP WATER - Business Water Platform",
+  "description": "Sistema Integral de Despacho, Ventas y Gestión Operacional para purificadoras de agua.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

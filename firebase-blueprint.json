@@ -1,0 +1,182 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for admins, supervisors, and sellers.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["admin", "supervisor", "seller", "plant_manager"] },
+        "zone": { "type": "string" },
+        "vehicle": { "type": "string" },
+        "phone": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive", "suspended"] },
+        "currentCorrelative": { "type": "integer" },
+        "correlativeEnd": { "type": "integer" }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Inventory": {
+      "title": "Inventory",
+      "description": "Global bottle inventory counts.",
+      "type": "object",
+      "properties": {
+        "plantStock": { "type": "integer" },
+        "inRoute": { "type": "integer" },
+        "sold": { "type": "integer" },
+        "returned": { "type": "integer" },
+        "inProcess": { "type": "integer" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Bottled water products and pricing.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" }
+      },
+      "required": ["name", "price"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer database for frequent buyers and credit control.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "type": { "type": "string", "enum": ["regular", "frequent", "credit"] },
+        "balance": { "type": "number" },
+        "lastPurchase": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global application configuration.",
+      "type": "object",
+      "properties": {
+        "defaultUnitPrice": { "type": "number" },
+        "companyName": { "type": "string" },
+        "currency": { "type": "string" },
+        "denominations": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "Dispatch": {
+      "title": "Dispatch",
+      "description": "Initial or reload dispatch of bottles to a seller.",
+      "type": "object",
+      "properties": {
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "bottleCount": { "type": "integer" },
+        "type": { "type": "string", "enum": ["initial", "reload"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "confirmedBy": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed"] }
+      },
+      "required": ["sellerId", "bottleCount", "type", "timestamp"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Individual sale transaction recorded by a seller.",
+      "type": "object",
+      "properties": {
+        "sellerId": { "type": "string" },
+        "correlative": { "type": "string" },
+        "bottleCount": { "type": "integer" },
+        "unitPrice": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paymentType": { "type": "string", "enum": ["cash", "transfer", "credit", "abono"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "customerName": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        }
+      },
+      "required": ["sellerId", "correlative", "bottleCount", "totalAmount", "paymentType", "timestamp"]
+    },
+    "CashClosure": {
+      "title": "CashClosure",
+      "description": "End of day cash and bottle reconciliation.",
+      "type": "object",
+      "properties": {
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "bottlesDespatched": { "type": "integer" },
+        "bottlesReturned": { "type": "integer" },
+        "bottlesSoldCalculated": { "type": "integer" },
+        "expectedCash": { "type": "number" },
+        "declaredCash": { "type": "number" },
+        "difference": { "type": "number" },
+        "denominations": { "type": "object" },
+        "status": { "type": "string", "enum": ["balanced", "difference", "pending", "rejected"] },
+        "observations": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sellerId", "date", "expectedCash", "declaredCash", "status"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Operational expense record.",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string", "enum": ["maintenance", "fuel", "supplies", "payroll", "services", "other"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "vehicleId": { "type": "string" }
+      },
+      "required": ["category", "amount", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and roles."
+    },
+    "/inventory/global": {
+      "schema": "Inventory",
+      "description": "Global inventory state."
+    },
+    "/dispatches/{dispatchId}": {
+      "schema": "Dispatch",
+      "description": "Bottle dispatch records."
+    },
+    "/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Sales transactions."
+    },
+    "/closures/{closureId}": {
+      "schema": "CashClosure",
+      "description": "Daily seller closures."
+    },
+    "/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Operational expenses."
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Products and pricing."
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer database."
+    },
+    "/settings/global": {
+      "schema": "Settings",
+      "description": "Global app settings."
+    }
+  }
+}
